@@ -24,7 +24,7 @@ module register_bank(clk, reset, readAdd1, readAdd2, writeAdd, writeData, writeE
 	always @(posedge clk ) begin 
 	  if ( reset ) begin 
 	    for ( i =0; i<8 ; i = i+1 ) begin
-	     register_ram[i] = 0;
+	     register_ram[i] = i;
         end
 	  end
       else begin

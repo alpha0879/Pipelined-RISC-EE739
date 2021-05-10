@@ -26,7 +26,7 @@ always @(opcode, ir_lsb_2)
 		else if( opcode == 4'b0000 ) begin  //ADI
 			RR_A1_Address_sel = 1'b0;
 			RR_A2_Address_sel = 1'b1; // not required during ADI
-			RR_A3_Address_sel = 2'b00;
+			RR_A3_Address_sel = 2'b01; //changed now for ADI not working
 			RR_Wr_En = 1'b1;
 			EXE_ALU_Src2 = 2'b01;
 			EXE_ALU_Oper = 2'b00;
