@@ -34,12 +34,13 @@ module ALU (in1, in2, operation, out, zero, carry);
 	 else begin	
 	   carry = (operation == 2'b01) ? 1'b0 : outAdd[16];
 	   out = (operation == 2'b01) ? outNand : outAdd[15:0];
+	   zero = (out == 16'b0) ? 1'b1 : 1'b0; 	   
 	  end 
 	end
 	
-	always @(*) begin 
+	/* always @(*) begin 
 	   zero = (out == 16'b0) ? 1'b1 : 1'b0; 	   
-	end
+	end */
 	
 	
 endmodule

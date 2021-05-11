@@ -112,8 +112,8 @@ always @(opcode, ir_lsb_2)
 		else begin  // corresponding to ADD
 			RR_A1_Address_sel = 1'b0;
 			RR_A2_Address_sel = 1'b0;
-			RR_A3_Address_sel = 2'b00;
-			RR_Wr_En = 1'b1;
+			RR_A3_Address_sel = 2'b10;
+			RR_Wr_En = 1'b0;
 		    EXE_ALU_Src2 = 2'b00;
 			EXE_ALU_Oper = 2'b00;
 			Reg_D3_Sel = 2'b00;
