@@ -7,7 +7,7 @@
 
 /* stall for load -- gives 1 when immediate dependency for load is present - give to stall logic*/
 
-/*ir_from_mem_stage -- instruction for load dependency check */
+/*ir_from_mem_stage -- instruction for load dependency check -- update not using it.. have to change the port map */
 
 //rs1_addr_rr_ex, rs2_addr_rr_ex - address from rr_ex pipeline to alu
 //rd_addr_ex_mem - rd address in ex_mem pipeline - for immediate dependency
@@ -26,7 +26,7 @@ module forwarding_control_unit ( ir_from_mem_stage, rs1_addr_rr_ex, rs2_addr_rr_
 	/* output reg stall_for_load; */
 	
 	
-	localparam load = 4'b0100;
+	//localparam load = 4'b0100;
 								 
 	always @(*) begin
 	 

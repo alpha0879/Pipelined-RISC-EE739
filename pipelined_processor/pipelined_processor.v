@@ -6,13 +6,14 @@
 //id_ex_hazard_reset - nned to be defined
 
 
-module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,ex_mem_hazard_reset);
+module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,ex_mem_hazard_reset,mem_wb_hazard_reset);
 
  input clk, reset;
  
  input if_id_hazard_reset;
  input id_ex_hazard_reset;
  input ex_mem_hazard_reset;
+ input mem_wb_hazard_reset;
  
  
  // ******************************************** signals for fetch stage + if-id pipeline ************************************************
@@ -64,6 +65,8 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
  
  // ********************************************** signals for MEM stage ****************************************************************
     wire [15:0] Memory_out;	
+	reg zero_wr_en_from_mem = 0;
+	reg zero_flag_from_mem = 0;
 
  // ********************************************** signals for MEM-WB pipeline register ************************************************
 	wire mem_wb_hazard_reset, mem_wb_reg_reset, mem_wb_enable;
@@ -73,9 +76,13 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	wire [15:0] rd_data_at_wb;
 	
 	// ********************************************** signals for MEM-WB pipeline register ************************************************
-	
-	wire [4:0] hazard_signal;
 	wire [15:0] ir_at_wb;
+	
+	
+	// ********************************************** signals for hazard detection ************************************************
+	reg [1:0] counter = 0;   
+	wire [4:0] hazard_signal;// = 5'b11111;
+
  // ***************************************************************** Fetch stage *****************************************************************
  
 	// program counter + instruction memory  
@@ -130,7 +137,10 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
      register_generic carry_register (.clk(clk), .reset(reset), .enable(carry_write_en), .in(carry_flag_in), .out(carry_flag_out) ); 
      defparam carry_register.n = 1;	
 	 
-	 register_generic zero_register (.clk(clk), .reset(reset), .enable(zero_write_en), .in(zero_flag_in), .out(zero_flag_out) );
+	 //zero_wr_en_from_mem - comes from memory, for load signals
+	 // zero_flag_from_mem - comes from memory, for load signals ( load can set the zero flag)
+	 register_generic zero_register (.clk(clk), .reset(reset), .enable( zero_write_en || zero_wr_en_from_mem ), 
+										.in(zero_flag_in || zero_flag_from_mem), .out(zero_flag_out) );
 	 defparam zero_register.n = 1;
 	 
 	 //Control_In format {RR_A3_Address_sel(btwn aluout and mem), RR_Wr_En, EXE_ALU_Oper, MEM_Wr_En} total 3 bits	
@@ -191,6 +201,19 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 									.writeEnable(control_out_from_ex_mem[0]), .dataOut(Memory_out));									
 		//MUX to choose btw alu_out or memory_data to update register_file
 		mux_16_bit_2_input reg_data_select (.ip0(rd_data_ex_mem), .ip1(Memory_out), .select(control_out_from_ex_mem[1]), .out(rd_out_at_mem));
+		
+		always @( * ) begin
+			if ( ir_out_from_ex_mem == 4'b0100 && rd_out_at_mem == 16'd0 ) begin 
+			 zero_wr_en_from_mem = 1;
+			 zero_flag_from_mem = 1;
+			end
+			else begin
+			 zero_wr_en_from_mem = 0;
+			 zero_flag_from_mem = 0;
+			end
+			
+			 
+		end
 				
 	//*************************************************** MEM-WB PIPELINE REG *************************************************************** 
 
@@ -200,7 +223,24 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 												 .Rd_Data_Out_PR(rd_data_at_wb), .Instr_Out(ir_at_wb));				
      
     //*************************************************** HAZARD DETECTION *************************************************************** 	
-    assign hazard_signal  = ((ir_out_from_id_ex[15:12] == 4'b0100) && ((A1_address == rf_d3_addr_at_ex ) || (A2_address == rf_d3_addr_at_ex )))? 5'b00011 : 5'b11111;	
+   
+    // Hazard detection to check immediate load dependency - stalls for 1 clock. No other hazard handling needed since forwarding takes care of
+	// others
+   
+    always @( posedge clk ) begin
+	  counter = 0;
+      if ((ir_out_from_id_ex[15:12] == 4'b0100) && ((A1_address == rf_d3_addr_at_ex ) || (A2_address == rf_d3_addr_at_ex ))) 
+	  begin
+	    counter <= counter + 1;		
+		if ( counter == 1 )  
+		begin 
+			//hazard_signal = 5'b11111;
+			counter = 0;
+		end
+	  end
+    end
+   //assign hazard_signal  = ((ir_out_from_id_ex[15:12] == 4'b0100) && ((A1_address == rf_d3_addr_at_ex ) || (A2_address == rf_d3_addr_at_ex )))? 5'b00011 : 5'b11111;	
+    assign hazard_signal = ( counter == 1) ? 5'b00011 : 5'b11111;
 endmodule
 	 
 	 
