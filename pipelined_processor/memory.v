@@ -64,16 +64,16 @@ module instruction_memory(clk, reset, readAdd, out);
 				end
 				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
 				instruction_mem[1]  <=		16'b0001001110010010; // ADC R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // should not run
-				instruction_mem[2] 	<= 		16'b0001010100000000; // ADD R0, R2, R4 ADD: 00_01 RA RB RC 0 00
+				instruction_mem[2] 	<= 		16'b0001010100000000; // ADD R0, R2, R4 ADD: 00_01 RA RB RC 0 00  // r0 =6
 				instruction_mem[3] 	<= 		16'b0001010100110000; // ADD R6, R2, R4 ADD: 00_01 RA RB RC 0 00 // r6 = 6
-				instruction_mem[4] 	<= 		16'b0001010100111000; // ADD R7, R2, R4 ADD: 00_01 RA RB RC 0 00 
-				instruction_mem[5] 	<= 		16'b0100001110000001; //lw R1, R6, 1
-				instruction_mem[6]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00
-				instruction_mem[7]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00
-				instruction_mem[8]  <=      16'b0101100001000001;// sw R4, R1 1 
+				instruction_mem[4] 	<= 		16'b0001010100111000; // ADD R7, R2, R4 ADD: 00_01 RA RB RC 0 00  // r7 = 6
+				instruction_mem[5] 	<= 		16'b0100001110000001; //lw R1, R6, 1    //r1 = 7
+				instruction_mem[6]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00 // r3 = 8
+				instruction_mem[7]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00 // r4 = 13
+				instruction_mem[8]  <=      16'b0101100001000001;// sw R4, R1 1     // 13 to 8th loc
 				
-				instruction_mem[9]  <=      16'b0100111101000001;// lw r7, r5,1
-				instruction_mem[10]  <=     16'b0001111000110001;// adz r6, r7,r0
+				instruction_mem[9]  <=      16'b0100111101000001;// lw r7, r5,1    // r7 = 0
+				instruction_mem[10]  <=     16'b0001111000110001;// adz r6, r7,r0  // r6 = 0 + 6 = 6
 				instruction_mem[11] <=      16'b0001100101010001;// adz r2, r4,r5 -- should not execute  
 				
 				/* instruction_mem[4]  <= 		16'b0001111001110011; // Adl R6,R7,R1

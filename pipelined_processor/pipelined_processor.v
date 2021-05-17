@@ -1,26 +1,13 @@
-//pc_enable - need to be defined
-//if_id_enable - need to be defined
-//id_ex_enable - need to b defined
 
-// if_id_hazard_reset --- need to be defined
-//id_ex_hazard_reset - nned to be defined
+module pipelined_processor ( clk, reset);
 
-
-module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,ex_mem_hazard_reset,mem_wb_hazard_reset);
-
- input clk, reset;
- 
- input if_id_hazard_reset;
- input id_ex_hazard_reset;
- input ex_mem_hazard_reset;
- input mem_wb_hazard_reset;
- 
+	input clk, reset;
  
  // ******************************************** signals for fetch stage + if-id pipeline ************************************************
  
- wire [15:0] pc_out, pc_next, pc_from_if_id, pc_next_from_if_id;
- wire [15:0] instruction , ir_from_if_id; 
- wire  if_id_reg_reset, if_id_hazard_reset;
+	 wire [15:0] pc_out, pc_next, pc_from_if_id, pc_next_from_if_id;
+	 wire [15:0] instruction , ir_from_if_id; 
+	 wire  if_id_reg_reset, if_id_hazard_reset;
 
  
  // ********************************************** signals for ID-RR STAGE ************************************************
@@ -32,13 +19,12 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	 wire [9:0] control_signals;
 
  // ********************************************** signals for RR-EX pipeline register ************************************************
-     wire id_ex_reg_reset, id_ex_hazard_reset, id_ex_enable;
+     wire id_ex_reg_reset, id_ex_enable;
 	 wire [15:0] pc_out_from_id_ex;
 	 wire [9:0] control_sig_out_from_id_ex;
-	 wire [15:0] RF_D1_out_from_id_ex, RF_D2_out_from_id_ex, ir_out_from_id_ex;
-	 wire [2:0] rs1_addr_from_rr_ex, rs2_addr_from_rr_ex, rd_prev_addr_from_rr_ex;
-	 wire rf_wr_en_prev_from_rr_ex;
- 
+	 wire [15:0] RF_D1_out_from_id_ex, RF_D2_out_from_id_ex, ir_out_from_id_ex, RF_D1_NEW, RF_D2_NEW;
+	 wire [2:0] rs1_addr_from_rr_ex, rs2_addr_from_rr_ex;
+
  // ********************************************** signals for EX stage ***************************************************************		 
 	 wire carry_flag_in, zero_flag_in;
 	 wire carry_flag_out, zero_flag_out;
@@ -47,7 +33,6 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	 wire reg_write_en_redefined;
 	 wire [2:0] new_control_signals_at_ex;
 	 wire [1:0] rs1_frwd_control, rs2_frwd_control;
-	 /* wire stall_hazard_due_to_load; */
 	 wire [15:0] alu_src_A, alu_src_B;
 	 wire [15:0] rf_d2_forwarded;
 	 wire [15:0] imm16, rf_d2_shift_left_1;
@@ -55,11 +40,10 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	 wire [2:0] rf_d3_addr_at_ex;
 	 wire [15:0] lhi_data;
 	 wire [15:0] rf_d3_data_at_ex;
-	 wire [15:0] rd_prev_data_from_rr_ex;
- 
+
  // ********************************************** signals for EX-MEM pipeline register ************************************************
-	wire ex_mem_hazard_reset, ex_mem_reg_reset, ex_mem_enable;
-	assign ex_mem_reg_reset = reset || ex_mem_hazard_reset; 
+	wire ex_mem_reg_reset, ex_mem_enable;
+	assign ex_mem_reg_reset = reset; 
 	wire [2:0] control_out_from_ex_mem, rd_addr_ex_mem;
 	wire [15:0] rd_data_ex_mem, mem_data_in, mem_addr, ir_out_from_ex_mem, rd_out_at_mem;	
  
@@ -69,8 +53,8 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	reg zero_flag_from_mem = 0;
 
  // ********************************************** signals for MEM-WB pipeline register ************************************************
-	wire mem_wb_hazard_reset, mem_wb_reg_reset, mem_wb_enable;
-	assign mem_wb_reg_reset = reset || mem_wb_hazard_reset; 	
+	wire  mem_wb_reg_reset, mem_wb_enable;
+	assign mem_wb_reg_reset = reset; 	
 	wire reg_wr_en_at_wb;
 	wire [2:0] rd_addr_at_wb;
 	wire [15:0] rd_data_at_wb;
@@ -92,7 +76,7 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	
  // ***************************************************************** IF-ID PIPELINE REG ********************************************************
  
-	assign if_id_reg_reset = reset || if_id_hazard_reset;  
+	assign if_id_reg_reset = reset ;  
 	IF2ID_Pipline_Reg if_id_pipe_reg (.clk(clk), .rst(if_id_reg_reset), .enable(hazard_signal[3]), .PC_In(pc_out), .PC_Next_In(pc_next), 
 							.Instr_In(instruction), .PC_Out(pc_from_if_id), .PC_Next_Out(pc_next_from_if_id), .Instr_Out(ir_from_if_id));
 							
@@ -114,18 +98,32 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	 
 	 // register bank
 	 register_bank  register_file ( .clk(clk), .reset(reset), .readAdd1(A1_address), .readAdd2(A2_address), .writeAdd(rd_addr_at_wb)
-									,.writeData(rd_data_at_wb),.writeEnable(reg_wr_en_at_wb), .readData1(RF_D1), .readData2(RF_D2) );										
+									,.writeData(rd_data_at_wb),.writeEnable(reg_wr_en_at_wb), .readData1(RF_D1), .readData2(RF_D2) 
+									.r7writeData(pc_current), .r7wrEnable(hazard_signal[4]) ); // hazard_signal[4] is pc enable		
+
+
+	//forwarding unit 
+	 forwarding_control_unit forwardlogic ( .rs1_addr_rr(A1_address), .rs2_addr_rr(A2_address),
+											.rd_addr_ex(rf_d3_addr_at_ex), .rd_addr_mem(rd_addr_ex_mem), 
+											.rd_addr_wb(rd_addr_at_wb),.reg_wr_en_ex(reg_write_en_redefined), 
+											.reg_wr_en_mem(control_out_from_ex_mem[2]),.reg_wr_en_wb(reg_wr_en_at_wb), 
+											.rs1_frwd_control(rs1_frwd_control), .rs2_frwd_control(rs2_frwd_control));	 	 
+	 
+
+	 // forward unit rs1 rs2 mux 
+	  mux_16_bit_4_input rs1_fwd_mux(.ip0(RF_D1), .ip1(rf_d3_data_at_ex), .ip2(rd_out_at_mem), .ip3(rd_data_at_wb), 
+									.select(rs1_frwd_control), .out(RF_D1_NEW)); 
+	  mux_16_bit_4_input rs2_fwd_mux(.ip0(RF_D2), .ip1(rf_d3_data_at_ex), .ip2(rd_out_at_mem), .ip3(rd_data_at_wb), 
+									.select(rs2_frwd_control), .out(RF_D2_NEW));
+									
 	 
 	// ***************************************************************** ID-EX PIPELINE REG ********************************************************	
-	assign id_ex_reg_reset = reset || id_ex_hazard_reset;
+	assign id_ex_reg_reset = reset;
 	
 	 ID2EX_Pipline_Reg id_ex_pipe_reg (.clk(clk), .rst(id_ex_reg_reset), .enable(hazard_signal[2]), .PC_In(pc_from_if_id), .Control_In(control_signals), 
-								.RF_A1_In(A1_address), .RF_A2_In(A2_address), .RF_A3_From_WB_In(rd_addr_at_wb), .RF_D3_From_WB_In(rd_data_at_wb), 
-								.RR_Write_En_In(reg_wr_en_at_wb), .RF_D1_In(RF_D1), .RF_D2_In(RF_D2), .Instr_In(ir_from_if_id), .PC_Out(pc_out_from_id_ex), 
-								.Control_Out (control_sig_out_from_id_ex), .RF_A1_Out(rs1_addr_from_rr_ex), .RF_A2_Out(rs2_addr_from_rr_ex), 
-								.RF_A3_From_WB_Out(rd_prev_addr_from_rr_ex), .RF_D3_From_WB_Out(rd_prev_data_from_rr_ex), 
-								.RR_Write_En_Out(rf_wr_en_prev_from_rr_ex), .RF_D1_Out(RF_D1_out_from_id_ex), .RF_D2_Out(RF_D2_out_from_id_ex), 
-								.Instr_Out(ir_out_from_id_ex));
+								.RF_A1_In(A1_address), .RF_A2_In(A2_address),.RF_D1_In(RF_D1_NEW), .RF_D2_In(RF_D2_NEW), .Instr_In(ir_from_if_id), 
+								.PC_Out(pc_out_from_id_ex),.Control_Out (control_sig_out_from_id_ex), .RF_A1_Out(rs1_addr_from_rr_ex), 
+								.RF_A2_Out(rs2_addr_from_rr_ex),.RF_D1_Out(alu_src_A), .RF_D2_Out(rf_d2_forwarded), .Instr_Out(ir_out_from_id_ex));
 										
 	// ***************************************************************** EX stage *****************************************************************
 	 
@@ -144,30 +142,17 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	 defparam zero_register.n = 1;
 	 
 	 //Control_In format {RR_A3_Address_sel(btwn aluout and mem), RR_Wr_En, EXE_ALU_Oper, MEM_Wr_En} total 3 bits	
-
 	
-	 
-	//forwarding unit   // define ir from mem stage rs1 addr from rr ex, rs2 addr , rd_addr_from_ex_mem
-	 forwarding_control_unit forwardlogic ( .ir_from_mem_stage(ir_out_from_ex_mem), .rs1_addr_rr_ex(rs1_addr_from_rr_ex), .rs2_addr_rr_ex(rs2_addr_from_rr_ex),
-											.rd_addr_ex_mem(rd_addr_ex_mem), .rd_addr_mem_wb(rd_addr_at_wb), 
-											.rd_prev_addr_rr_ex(rd_prev_addr_from_rr_ex),.reg_wr_en_ex_mem(control_out_from_ex_mem[2]), 
-											.reg_wr_en_mem_wb(reg_wr_en_at_wb),.reg_wr_en_rr_ex_prev(rf_wr_en_prev_from_rr_ex), 
-											.rs1_frwd_control(rs1_frwd_control), .rs2_frwd_control(rs2_frwd_control)/* , .stall_for_load(stall_hazard_due_to_load) */);	 	 
-	 
-	 // forward unit rs1 rs2 mux 
-	  mux_16_bit_4_input rs1_fwd_mux(.ip0(RF_D1_out_from_id_ex), .ip1(rd_data_ex_mem), .ip2(rd_data_at_wb), .ip3(rd_prev_data_from_rr_ex), 
-									.select(rs1_frwd_control), .out(alu_src_A)); 
-	  mux_16_bit_4_input rs2_fwd_mux(.ip0(RF_D2_out_from_id_ex), .ip1(rd_data_ex_mem), .ip2(rd_data_at_wb), .ip3(rd_prev_data_from_rr_ex), 
-									.select(rs2_frwd_control), .out(rf_d2_forwarded));
 	 
 	 // alu srcb select
 	  assign imm16 = { {10{1'b0}}, ir_out_from_id_ex[5:0]};
+
 	  assign rf_d2_shift_left_1 = rf_d2_forwarded << 1;
 	  mux_16_bit_4_input alu_srcb_mux (.ip0(rf_d2_forwarded), .ip1(imm16), .ip2(rf_d2_shift_left_1), .ip3(16'd0), 
 									.select(control_sig_out_from_id_ex[6:5]), .out(alu_src_B));	 
 	 
-	 // alu 	  
-	  ALU alu_execute ( .in1(alu_src_A), .in2(alu_src_B), .operation(alu_control_redefined), .out(alu_out), .zero(zero_flag_in),
+	 // alu    
+	 ALU alu_execute ( .in1(alu_src_A), .in2(alu_src_B), .operation(alu_control_redefined), .out(alu_out), .zero(zero_flag_in),
 							.carry(carry_flag_in));
 	 
 	 
@@ -177,10 +162,8 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 	 // rf_d3 data selector mux
 	 assign lhi_data = {ir_out_from_id_ex[8:0],{7{1'b0}}};
 	 mux_16_bit_2_input rf_d3_data_select (.ip0(alu_out), .ip1(lhi_data), .select(control_sig_out_from_id_ex[2]), .out(rf_d3_data_at_ex));
-	 
-	 
-	 
-	 	 // control_sig_out_from_id_ex[8] this selects between memory and alu 
+	 	 	 
+	 // control_sig_out_from_id_ex[8] this selects between memory and alu 
 	 assign new_control_signals_at_ex = {reg_write_en_redefined, control_sig_out_from_id_ex[1] , control_sig_out_from_id_ex[0]};
 	 
 	// ***************************************************************** EX-MEM PIPELINE REG ********************************************************	
@@ -239,7 +222,7 @@ module pipelined_processor ( clk, reset, if_id_hazard_reset,id_ex_hazard_reset,e
 		end
 	  end
     end
-   //assign hazard_signal  = ((ir_out_from_id_ex[15:12] == 4'b0100) && ((A1_address == rf_d3_addr_at_ex ) || (A2_address == rf_d3_addr_at_ex )))? 5'b00011 : 5'b11111;	
+   
     assign hazard_signal = ( counter == 1) ? 5'b00011 : 5'b11111;
 endmodule
 	 

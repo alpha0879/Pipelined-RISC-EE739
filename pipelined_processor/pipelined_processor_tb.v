@@ -4,7 +4,7 @@ module pipelined_processor_tb;
 
 reg clk, reset;
 
-pipelined_processor uut ( clk, reset, 1'b0, 1'b0, 1'b0,1'b0);
+pipelined_processor uut ( clk, reset);
 
 always #10 clk = ~clk;
 
