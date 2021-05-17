@@ -98,8 +98,8 @@ module pipelined_processor ( clk, reset);
 	 
 	 // register bank
 	 register_bank  register_file ( .clk(clk), .reset(reset), .readAdd1(A1_address), .readAdd2(A2_address), .writeAdd(rd_addr_at_wb)
-									,.writeData(rd_data_at_wb),.writeEnable(reg_wr_en_at_wb), .readData1(RF_D1), .readData2(RF_D2) 
-									.r7writeData(pc_current), .r7wrEnable(hazard_signal[4]) ); // hazard_signal[4] is pc enable		
+									,.writeData(rd_data_at_wb),.writeEnable(reg_wr_en_at_wb), .readData1(RF_D1), .readData2(RF_D2)  ,
+									.r7writeData(pc_next), .r7wrEnable(hazard_signal[4])); // hazard_signal[4] is pc enable		
 
 
 	//forwarding unit 
