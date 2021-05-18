@@ -26,7 +26,7 @@ module pipelined_processor ( clk, reset);
 	 wire [2:0] rs1_addr_from_rr_ex, rs2_addr_from_rr_ex;
 
  // ********************************************** signals for EX stage ***************************************************************		 
-	 wire carry_flag_in, zero_flag_in;
+	 wire carry_flag_in, zero_flag_in, zero_flag;
 	 wire carry_flag_out, zero_flag_out;
 	 wire carry_write_en, zero_write_en;
 	 wire [1:0] alu_control_redefined;
@@ -137,8 +137,15 @@ module pipelined_processor ( clk, reset);
 	 
 	 //zero_wr_en_from_mem - comes from memory, for load signals
 	 // zero_flag_from_mem - comes from memory, for load signals ( load can set the zero flag)
+	 
+	 always @ (*) begin 
+	  if ( zero_write_en ) 
+	      zero_flag <= zero_flag_in;
+	  else if ( zero_wr_en_from_mem )
+		  zero_flag <= zero_flag_from_mem;
+	  end	 
 	 register_generic zero_register (.clk(clk), .reset(reset), .enable( zero_write_en || zero_wr_en_from_mem ), 
-										.in(zero_flag_in || zero_flag_from_mem), .out(zero_flag_out) );
+										.in(zero_flag /*zero_flag_in || zero_flag_from_mem*/), .out(zero_flag_out) );
 	 defparam zero_register.n = 1;
 	 
 	 //Control_In format {RR_A3_Address_sel(btwn aluout and mem), RR_Wr_En, EXE_ALU_Oper, MEM_Wr_En} total 3 bits	
