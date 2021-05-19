@@ -1,5 +1,4 @@
 //00 - normal flow, 01 - jal, 10 - jlr,  jri,  beq
-// Controller to decide the mux select of pc
 
 module branch_jump_controller (pc_control_from_ex, pc_control_from_id, pc_select);
 

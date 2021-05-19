@@ -2,7 +2,6 @@
 // Assume R7 will not be modifiable by any other instrn and R7 has a seperate write port
 // pc directly hardwired to r7 . r7 write enable and pc enable are shorted. 
 // Hope no hazards won't come out of this assumption :)
-// Last Modified on 18-05-2021 
 
 
 module register_bank(clk, reset, readAdd1, readAdd2, writeAdd, writeData, writeEnable, readData1, readData2, r7writeData, r7wrEnable);
@@ -33,7 +32,7 @@ module register_bank(clk, reset, readAdd1, readAdd2, writeAdd, writeData, writeE
 	    for ( i = 0; i < 7 ; i = i+1 ) begin
 	     register_ram[i] = i;
         end
-		register_ram[4] = 3; // for debugging purpose, change later
+		//register_ram[4] = 3; // for debugging purpose, change later
 		register_ram[7] = 0; // pc starts @ loc 0
 	  end
       else begin

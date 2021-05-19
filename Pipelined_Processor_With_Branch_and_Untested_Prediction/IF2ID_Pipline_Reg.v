@@ -1,5 +1,3 @@
-// Added Spec_taken bit
-
 module IF2ID_Pipline_Reg (clk, rst, enable, PC_In, PC_Next_In, Instr_In, Spec_taken_in, PC_Out, PC_Next_Out, Instr_Out, Spec_taken_out);
  
 	input clk, rst, enable, Spec_taken_in;

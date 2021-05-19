@@ -11,6 +11,7 @@ always #10 clk = ~clk;
 initial begin 
  clk = 0;
  reset = 1'b1;
+ 
  #20
  reset = 1'b0;
  end

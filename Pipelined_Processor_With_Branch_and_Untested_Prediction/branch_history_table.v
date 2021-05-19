@@ -93,7 +93,7 @@ output reg  match, history_bit;
 		if ( found_at_jal == 0 ) begin 
 			if ( pointer == 8 ) pointer = 0;
 			else pointer = pointer + 1;
-			branchHistoryTable[pointer] = {pc_from_id, bta_from_id, 1'b1 }; // for jal HB is always 1.
+			branchHistoryTable[pointer] = {pc_from_id, bta_from_id, 1'b1 }; // for jal HB is always 1
 		end 
 	end
   end

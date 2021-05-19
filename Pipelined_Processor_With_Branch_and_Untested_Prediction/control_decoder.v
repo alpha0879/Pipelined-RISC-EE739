@@ -1,8 +1,3 @@
-// added pc_data_select for saving pc+1
-// added opcodes for jal, jlr
-//beq, jri need not have any extra controls. so not added
-// yet to add - la, sa, lm , sm
-
 module control_decoder (opcode, ir_lsb_2, RR_A1_Address_sel, RR_A2_Address_sel, RR_A3_Address_sel, RR_Wr_En, 
 						EXE_ALU_Src2, EXE_ALU_Oper, Reg_D3_Sel, MEM_Wr_En, pc_data_select);
 

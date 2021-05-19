@@ -40,16 +40,16 @@ module pipelined_processor ( clk, reset);
 	 wire rf_wr_en_prev_from_rr_ex;
 	 wire seperate_control_for_pc_select;
 	 wire data_select_control_for_pc_at_ex;
-	 wire [15:0] RF_D1_NEW, RF_D2_NEW;
  
  // ********************************************** signals for EX stage ***************************************************************		 
 	 wire carry_flag_in, zero_flag_in;
 	 wire carry_flag_out, zero_flag_out;
+	 reg zero_flag;
 	 wire carry_write_en, zero_write_en;
 	 wire [1:0] alu_control_redefined;
 	 wire reg_write_en_redefined;
 	 wire [2:0] new_control_signals_at_ex;
-	 wire [1:0] rs1_frwd_control, rs2_frwd_control;  /* WARNING - SOME OF THE SIGNALS ARE NOW USED IN ID, AS FORWARDING IS NOW IN ID */
+	 wire [1:0] rs1_frwd_control, rs2_frwd_control;
 	 wire [15:0] alu_src_A, alu_src_B;
 	 wire [15:0] rf_d2_forwarded;
 	 wire [15:0] imm16, rf_d2_shift_left_1;
@@ -184,23 +184,13 @@ module pipelined_processor ( clk, reset);
 									.r7writeData(pc_current), .r7wrEnable(hazard_signal[4]) ); // hazard_signal[4] is pc enable
  	
 	// ************************************************** JAL @ ID STAGE ***********************************************************		
-	// JAL , jlr, jri
+	// JAL 
 	always @ (*) begin 
       if ( ( ir_from_if_id[15:12] == JAL ) && ( spec_taken_at_if_out == 0 ) ) begin 
 	     nop_select_for_if_from_id = 1'b1;
 		 pc_control_from_id = 2'b01;
 		 pc_next_from_id = pc_from_if_id + {{7{ir_from_if_id[8]}}, ir_from_if_id[8:0]} ;
 		end
-	  else if ( ir_from_if_id[15:12] == jlr ) begin
-	    nop_select_for_if_from_id = 1;
-		pc_control_from_id = 2'b01; // for jlr
-		pc_next_from_id = RF_D2_NEW;
-	  end
-	  else if ( ir_from_if_id[15:12] == jri ) begin
-	    nop_select_for_if_from_id = 1;
-		pc_control_from_id = 2'b01; // for jri
-		pc_next_from_id = RF_D1_NEW + {{7{ir_from_if_id[8]}}, ir_from_if_id[8:0]} ;
-	  end
 	  else begin  
 	     nop_select_for_if_from_id = 1'b0;
 		 pc_control_from_id = 2'b00;
@@ -214,31 +204,17 @@ module pipelined_processor ( clk, reset);
 	  mux_1_bit_2_input nop_mem_wr_en_mux (.ip0(MEM_Wr_En), .ip1(1'b0), .select(reg_and_mem_wr_disable_for_id_from_ex), .out(mem_wr_en_at_id_resolved));
 		
 	 
-	 //forwarding unit 
-	 forwarding_control_unit forwardlogic ( .rs1_addr_rr(A1_address), .rs2_addr_rr(A2_address),
-											.rd_addr_ex(rf_d3_addr_at_ex), .rd_addr_mem(rd_addr_ex_mem), 
-											.rd_addr_wb(rd_addr_at_wb),.reg_wr_en_ex(reg_write_en_redefined), 
-											.reg_wr_en_mem(control_out_from_ex_mem[2]),.reg_wr_en_wb(reg_wr_en_at_wb), 
-											.rs1_frwd_control(rs1_frwd_control), .rs2_frwd_control(rs2_frwd_control));	 	 
-	 
-
-	 // forward unit rs1 rs2 mux 
-	  mux_16_bit_4_input rs1_fwd_mux(.ip0(RF_D1), .ip1(rf_d3_data_at_ex), .ip2(rd_out_at_mem), .ip3(rd_data_at_wb), 
-									.select(rs1_frwd_control), .out(RF_D1_NEW)); 
-	  mux_16_bit_4_input rs2_fwd_mux(.ip0(RF_D2), .ip1(rf_d3_data_at_ex), .ip2(rd_out_at_mem), .ip3(rd_data_at_wb), 
-									.select(rs2_frwd_control), .out(RF_D2_NEW));
-	 
-	 
-	 
 	// ***************************************************** ID-EX PIPELINE REG ********************************************************************	
 	assign id_ex_reg_reset = reset;
 	
 	 ID2EX_Pipline_Reg id_ex_pipe_reg (.clk(clk), .rst(id_ex_reg_reset), .enable(hazard_signal[2]), .PC_In(pc_from_if_id),.PC_NEXT_IN(pc_next_from_if_id),
-								.Control_In(control_signals), .RF_A1_In(A1_address), .RF_A2_In(A2_address), .RF_D1_In(RF_D1_NEW), 
-								.RF_D2_In(RF_D2_NEW), .Instr_In(ir_from_if_id), .pc_data_select(seperate_control_for_pc_select), 
-								.Spec_Taken_In(spec_taken_at_if_out), .PC_Out(pc_out_from_id_ex), .Control_Out (control_sig_out_from_id_ex), 
-								.RF_A1_Out(rs1_addr_from_rr_ex),.RF_A2_Out(rs2_addr_from_rr_ex), .PC_NEXT_OUT(PC_next_from_id_ex), 
-								.RF_D1_Out(alu_src_A), .RF_D2_Out(rf_d2_forwarded), .Instr_Out(ir_out_from_id_ex), 
+								.Control_In(control_signals), .RF_A1_In(A1_address), .RF_A2_In(A2_address), .RF_A3_From_WB_In(rd_addr_at_wb), 
+								.RF_D3_From_WB_In(rd_data_at_wb), .RR_Write_En_In(reg_wr_en_at_wb), .RF_D1_In(RF_D1), .RF_D2_In(RF_D2), 
+								.Instr_In(ir_from_if_id), .pc_data_select(seperate_control_for_pc_select), .Spec_Taken_In(spec_taken_at_if_out), 
+								.PC_Out(pc_out_from_id_ex), .Control_Out (control_sig_out_from_id_ex), .RF_A1_Out(rs1_addr_from_rr_ex), 
+								.RF_A2_Out(rs2_addr_from_rr_ex), .PC_NEXT_OUT(PC_next_from_id_ex), .RF_A3_From_WB_Out(rd_prev_addr_from_rr_ex), 
+								.RF_D3_From_WB_Out(rd_prev_data_from_rr_ex), .RR_Write_En_Out(rf_wr_en_prev_from_rr_ex), 
+								.RF_D1_Out(RF_D1_out_from_id_ex), .RF_D2_Out(RF_D2_out_from_id_ex), .Instr_Out(ir_out_from_id_ex), 
 								.pc_data_select_out(data_select_control_for_pc_at_ex), .Spec_Taken_Out(spec_taken_at_id_out));
 										
  // ***********************************************************************************************************************************************
@@ -257,14 +233,28 @@ module pipelined_processor ( clk, reset);
 	 
 	 //zero_wr_en_from_mem - comes from memory, for load signals
 	 // zero_flag_from_mem - comes from memory, for load signals ( load can set the zero flag)
-	 register_generic zero_register (.clk(clk), .reset(reset), .enable( zero_write_en || zero_wr_en_from_mem ), 
-										.in(zero_flag_in || zero_flag_from_mem), .out(zero_flag_out) );
-	 defparam zero_register.n = 1;
-	 	 	 	 
 	 
-	// ************************************************** BRANCH @ EX STAGE ***********************************************************	
+	 always @ (*) begin 
+	  if ( zero_write_en ) 
+	      zero_flag <= zero_flag_in;
+	  else if ( zero_wr_en_from_mem )
+		  zero_flag <= zero_flag_from_mem;
+	  end
+	 
+	 register_generic zero_register (.clk(clk), .reset(reset), .enable( zero_write_en || zero_wr_en_from_mem ), 
+										.in(zero_flag), .out(zero_flag_out) );
+	 defparam zero_register.n = 1;
+	 	 
+	//forwarding unit 
+	 forwarding_control_unit forwardlogic ( .rs1_addr_rr_ex(rs1_addr_from_rr_ex), .rs2_addr_rr_ex(rs2_addr_from_rr_ex),
+											.rd_addr_ex_mem(rd_addr_ex_mem), .rd_addr_mem_wb(rd_addr_at_wb), 
+											.rd_prev_addr_rr_ex(rd_prev_addr_from_rr_ex),.reg_wr_en_ex_mem(control_out_from_ex_mem[2]), 
+											.reg_wr_en_mem_wb(reg_wr_en_at_wb),.reg_wr_en_rr_ex_prev(rf_wr_en_prev_from_rr_ex), 
+											.rs1_frwd_control(rs1_frwd_control), .rs2_frwd_control(rs2_frwd_control));	 	 
+	 
+	// ************************************************** BRANCH + JLR + JRI @ EX STAGE ***********************************************************	
 	
-	// BRANCH
+	// BRANCH + JLR + JRI 	
 	 assign pc_branch =  pc_out_from_id_ex + {{10{ir_out_from_id_ex[5]}}, ir_out_from_id_ex[5:0]} ;
 	 
 	 assign equals = ( alu_src_A == rf_d2_forwarded );
@@ -300,6 +290,18 @@ module pipelined_processor ( clk, reset);
 			pc_next_from_ex = 16'd0;
 		end
 	 end
+	 else if ( ir_out_from_id_ex[15:12] == jlr ) begin
+	    nop_select_for_if_from_ex = 1;
+		reg_and_mem_wr_disable_for_id_from_ex = 1;
+		pc_control_from_ex = 2'b10; // for jlr
+		pc_next_from_ex = rf_d2_forwarded;
+	  end
+	  else if ( ir_out_from_id_ex[15:12] == jri ) begin
+	    nop_select_for_if_from_ex = 1;
+		reg_and_mem_wr_disable_for_id_from_ex = 1;
+		pc_control_from_ex = 2'b10; // for jri
+		pc_next_from_ex = alu_src_A + {{7{ir_out_from_id_ex[8]}}, ir_out_from_id_ex[8:0]} ;
+	  end
 	 else begin  
 		nop_select_for_if_from_ex = 0;
 		reg_and_mem_wr_disable_for_id_from_ex = 0; 
@@ -307,8 +309,13 @@ module pipelined_processor ( clk, reset);
 		pc_next_from_ex = 16'd0;
 	 end
 	end
-	// ************************************************** END OF BRANCH @ EX STAGE ***************************************************	 
-
+	// ************************************************** END OF BRANCH + JLR + JRI @ EX STAGE ***************************************************	 
+	 
+	 // forward unit rs1 rs2 mux 
+	  mux_16_bit_4_input rs1_fwd_mux(.ip0(RF_D1_out_from_id_ex), .ip1(rd_data_ex_mem), .ip2(rd_data_at_wb), .ip3(rd_prev_data_from_rr_ex), 
+									.select(rs1_frwd_control), .out(alu_src_A)); 
+	  mux_16_bit_4_input rs2_fwd_mux(.ip0(RF_D2_out_from_id_ex), .ip1(rd_data_ex_mem), .ip2(rd_data_at_wb), .ip3(rd_prev_data_from_rr_ex), 
+									.select(rs2_frwd_control), .out(rf_d2_forwarded));
 	 
 	 // alu srcb select
 	  assign imm16 = { {10{1'b0}}, ir_out_from_id_ex[5:0]};
@@ -361,7 +368,7 @@ module pipelined_processor ( clk, reset);
 		mux_16_bit_2_input reg_data_select (.ip0(rd_data_ex_mem), .ip1(Memory_out), .select(control_out_from_ex_mem[1]), .out(rd_out_at_mem));
 		
 		always @( * ) begin
-			if ( ir_out_from_ex_mem == 4'b0100 && rd_out_at_mem == 16'd0 && control_out_from_ex_mem[2] ) begin 
+			if ( ir_out_from_ex_mem[15:12] == 4'b0100 && rd_out_at_mem == 16'd0 ) begin 
 			 zero_wr_en_from_mem = 1;
 			 zero_flag_from_mem = 1;
 			end
