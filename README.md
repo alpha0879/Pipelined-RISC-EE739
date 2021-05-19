@@ -9,9 +9,5 @@
 
 # To - Do
 
-1) branches and jumps
-
-2) branch prediction
-
-3) LA SA LM SM
+1) LA SA LM SM
 
