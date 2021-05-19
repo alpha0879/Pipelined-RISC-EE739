@@ -49,21 +49,24 @@ module instruction_memory(clk, reset, readAdd, out);
 					for(i=0;i<4096;i=i+1) instruction_mem [i] =  16'b0111000000000000;
 				end
 				//worked , need to check
-				/* for prediction check
+				// for prediction check
 				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
 				instruction_mem[1]  <=		16'b0001001110010000; // ADD R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // R2 = 1 + 6 = 7 
-				instruction_mem[2] 	<= 		16'b0001010100000000; // ADD R0, R2, R4 ADD: 00_01 RA RB RC 0 00 // R0 = 11
+				instruction_mem[2] 	<= 		16'b0001010100000000; // ADD R0, R2, R4 ADD: 00_01 RA RB RC 0 00 // R0 = 10 , 2nd iteration r0 = 18+3 = 21
 				
 				instruction_mem[3] <=      16'b1000011100001100; // beq r3, r4, 12 ( pc = 3 + 12 = 15 )
 				
+				instruction_mem[4] <=      16'b0001000000001000;  // add r1, r0 r0    r1 = 42
+				instruction_mem[5] <=      16'b0001001000100000;  // add r4, r1, r0   r4 = 63
+				instruction_mem[6] <=      16'b1011000000001010;                 // jri r0 , 10 21 + 10 // new addition
 				
 				instruction_mem[15] <= 	  16'b0001001110011000;  // ADD R3, R1, R6 ADD: 00_01 RA RB RC 0 00 r3 = 7
-				instruction_mem[16] <= 	  16'b0001001110011000;
-				instruction_mem[17] <=    16'b1001010111110001; // jal r2, ,-15 ( pc = 17 - 15 = 2 ) R2 = 18 */
+				instruction_mem[16] <= 	  16'b0001001110101000;  // add r5, r1, r6 r5 = 7
+				instruction_mem[17] <=    16'b1001010111110001; // jal r2, ,-15 ( pc = 17 - 15 = 2 ) R2 = 18 
 				
 				
 				
-				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
+				/*instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
 				instruction_mem[1]  <=		16'b0001001110010010; // ADC R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // should not run
 				instruction_mem[2] 	<= 		16'b0000010000010010; // ADI R0, R2, 18 ADD: 00_01 RA RB RC 0 00 // R0 =20
 				instruction_mem[3] 	<= 		16'b0001010100110000; // ADD R6, R2, R4 ADD: 00_01 RA RB RC 0 00 // r6 = 6
@@ -84,7 +87,7 @@ module instruction_memory(clk, reset, readAdd, out);
 				instruction_mem[17] 	<= 		16'b0100001110000001; //lw R1, R6, 1 							 // should not run
 				instruction_mem[18]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00    // should not run
 				instruction_mem[19]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00     // should not run
-				instruction_mem[20]  <=      16'b0001100101011000;// add r3, r4,r5 ;// r3 = 6 + 20 = 26	, 
+				instruction_mem[20]  <=      16'b0001100101011000;// add r3, r4,r5 ;// r3 = 6 + 20 = 26	, */
 
 				
 				end	

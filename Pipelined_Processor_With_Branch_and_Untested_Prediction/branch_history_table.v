@@ -75,12 +75,7 @@ output reg  match, history_bit;
 				found = 1;
 				branchHistoryTable[j] = {temp_data1[32:1], 1'b0 };
 			end
-		end	 		
-		/*if ( found == 0 ) begin 
-			if ( pointer == 8 ) pointer = 0;
-			else pointer = pointer + 1;
-			branchHistoryTable[pointer] = {pc_from_ex, bta_from_ex, 1'b0 }; 
-		end*/ 		
+		end	 				
 	end
 	
 	else  if  ( opcode_from_id == jal )  begin 

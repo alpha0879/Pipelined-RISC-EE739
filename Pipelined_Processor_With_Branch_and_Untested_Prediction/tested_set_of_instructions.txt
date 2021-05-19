@@ -133,3 +133,99 @@
 				instruction_mem[18]  <=     16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00    // should not run
 				instruction_mem[19]  <=     16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00     // should not run
 				instruction_mem[20]  <=     16'b0001100101110000;// add r6, r4,r5 ;// r6 = 13 + 5 = 18	, 
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				19 - 05
+				
+				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
+				instruction_mem[1]  <=		16'b0001001110010010; // ADC R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[2] 	<= 		16'b0000010000010010; // ADI R0, R2, 18 ADD: 00_01 RA RB RC 0 00 // R0 =20
+				instruction_mem[3] 	<= 		16'b0001010100110000; // ADD R6, R2, R4 ADD: 00_01 RA RB RC 0 00 // r6 = 6
+				instruction_mem[4] 	<= 		16'b0001010100101000; // ADD R5, R2, R4 ADD: 00_01 RA RB RC 0 00 //r5 = 6
+				instruction_mem[5] 	<= 		16'b0100001110000001; //lw R1, R6, 1                             // r1 = 0
+				instruction_mem[6]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00  // r3 = 8
+				instruction_mem[7]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00   // r4 = 6
+				instruction_mem[8]  <=      16'b0101100001000001;// sw R4, R1 1   6 to 1th loc                
+				
+				instruction_mem[9]  <=      16'b0100101101000001;// lw r5, r5,1                               // r5 = 0
+				instruction_mem[10]  <=     16'b0001101000101001;// adz r5, r5,r0                             // r5 = 20
+				instruction_mem[11] <=      16'b0001100101001001;// adz r1, r4,r5 -- should not execute  
+				instruction_mem[12] <=      16'b1010010000000000; // jlr r2, R0 (BRANCH TO ADDR IN R0 = 20 )  // r2 = 13
+				instruction_mem[13]  <=		16'b0001001110010010; // ADC R2, R1, R6 ADD: 00_01 RA RB RC 0 00     // should not run
+				instruction_mem[14] 	<= 		16'b0001010100000000; // ADD R0, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[15] 	<= 		16'b0001010100110000; // ADD R6, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[16] 	<= 		16'b0001010100111000; // ADD R7, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[17] 	<= 		16'b0100001110000001; //lw R1, R6, 1 							 // should not run
+				instruction_mem[18]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00    // should not run
+				instruction_mem[19]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00     // should not run
+				instruction_mem[20]  <=      16'b0001100101011000;// add r3, r4,r5 ;// r3 = 6 + 20 = 26	, also r2 = 13
+				
+				
+				/// next -- jal
+				
+				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
+				instruction_mem[1]  <=		16'b0001001110010010; // ADC R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[2] 	<= 		16'b0000010000010010; // ADI R0, R2, 18 ADD: 00_01 RA RB RC 0 00 // R0 =20
+				instruction_mem[3] 	<= 		16'b0001010100110000; // ADD R6, R2, R4 ADD: 00_01 RA RB RC 0 00 // r6 = 6
+				instruction_mem[4] 	<= 		16'b0001010100101000; // ADD R5, R2, R4 ADD: 00_01 RA RB RC 0 00 //r5 = 6
+				instruction_mem[5] 	<= 		16'b0100001110000001; //lw R1, R6, 1                             // r1 = 0
+				instruction_mem[6]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00  // r3 = 8
+				instruction_mem[7]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00   // r4 = 6
+				instruction_mem[8]  <=      16'b0101100001000001;// sw R4, R1 1   6 to 1th loc                
+				
+				instruction_mem[9]  <=      16'b0100101101000001;// lw r5, r5,1                               // r5 = 0
+				instruction_mem[10]  <=     16'b0001101000101001;// adz r5, r5,r0                             // r5 = 20
+				instruction_mem[11] <=      16'b0001100101001001;// adz r1, r4,r5 -- should not execute  
+				instruction_mem[12] <=      16'b1001010000001000; // jal r2, 8 (BRANCH TO pc + 8 = 20 )  // r2 = 13
+				instruction_mem[13]  <=		16'b0001001110010010; // ADC R2, R1, R6 ADD: 00_01 RA RB RC 0 00     // should not run
+				instruction_mem[14] 	<= 		16'b0001010100000000; // ADD R0, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[15] 	<= 		16'b0001010100110000; // ADD R6, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[16] 	<= 		16'b0001010100111000; // ADD R7, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[17] 	<= 		16'b0100001110000001; //lw R1, R6, 1 							 // should not run
+				instruction_mem[18]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00    // should not run
+				instruction_mem[19]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00     // should not run
+				instruction_mem[20]  <=      16'b0001100101011000;// add r3, r4,r5 ;// r3 = 6 + 20 = 26	, also r2 = 13
+				
+				
+				
+				// jri
+				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
+				instruction_mem[1]  <=		16'b0001001110010010; // ADC R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[2] 	<= 		16'b0000010000010010; // ADI R0, R2, 18 ADD: 00_01 RA RB RC 0 00 // R0 =20
+				instruction_mem[3] 	<= 		16'b0001010100110000; // ADD R6, R2, R4 ADD: 00_01 RA RB RC 0 00 // r6 = 6
+				instruction_mem[4] 	<= 		16'b0001010100101000; // ADD R5, R2, R4 ADD: 00_01 RA RB RC 0 00 //r5 = 6
+				instruction_mem[5] 	<= 		16'b0100001110000001; //lw R1, R6, 1                             // r1 = 0
+				instruction_mem[6]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00  // r3 = 8
+				instruction_mem[7]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00   // r4 = 6
+				instruction_mem[8]  <=      16'b0101100001000001;// sw R4, R1 1   6 to 1th loc                
+				
+				instruction_mem[9]  <=      16'b0100101101000001;// lw r5, r5,1                               // r5 = 0
+				instruction_mem[10]  <=     16'b0001101000101001;// adz r5, r5,r0                             // r5 = 20
+				instruction_mem[11] <=      16'b0001100101001001;// adz r1, r4,r5 -- should not execute  
+				instruction_mem[12] <=      16'b1011011000001100; // jri r3, 12 (BRANCH TO r3 + 12 = 20 )  
+				instruction_mem[13]  <=		16'b0001001110010010; // ADC R2, R1, R6 ADD: 00_01 RA RB RC 0 00     // should not run
+				instruction_mem[14] 	<= 		16'b0001010100000000; // ADD R0, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[15] 	<= 		16'b0001010100110000; // ADD R6, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[16] 	<= 		16'b0001010100111000; // ADD R7, R2, R4 ADD: 00_01 RA RB RC 0 00 // should not run
+				instruction_mem[17] 	<= 		16'b0100001110000001; //lw R1, R6, 1 							 // should not run
+				instruction_mem[18]  <=      16'b0001010110011000; // ADD R3, R2, R6 ADD: 00_01 RA RB RC 0 00    // should not run
+				instruction_mem[19]  <=      16'b0001001110100000;// ADD R4, R1, R6 ADD: 00_01 RA RB RC 0 00     // should not run
+				instruction_mem[20]  <=      16'b0001100101011000;// add r3, r4,r5 ;// r3 = 6 + 20 = 26	, 
+				
+				
+				
+				
+				

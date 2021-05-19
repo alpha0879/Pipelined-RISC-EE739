@@ -45,7 +45,7 @@ module ALU_controller (ir, alu_operation_from_controller, carry_in, zero_in,
    always @(*) begin 
      
 	  if ( r_type_opcode == ADC ) begin 
-	     if ( carry_in ) begin 
+	     if ( carry_in && reg_write_enable_in) begin 
 		  carry_write_en = 1;
 		  zero_write_en = 1;
 		  alu_operation_out = 2'b00;
@@ -58,7 +58,7 @@ module ALU_controller (ir, alu_operation_from_controller, carry_in, zero_in,
 		  reg_write_enable_out = 0;
 	      end
 		end
-	  else if ( r_type_opcode == ADZ ) begin 
+	  else if ( r_type_opcode == ADZ && reg_write_enable_in) begin 
 	     if ( zero_in ) begin 
 		  carry_write_en = 1;
 		  zero_write_en = 1;
@@ -73,7 +73,7 @@ module ALU_controller (ir, alu_operation_from_controller, carry_in, zero_in,
 	      end
 		end
 		  
-	  else if ( r_type_opcode ==  NDC ) begin
+	  else if ( r_type_opcode == NDC && reg_write_enable_in) begin
 	     if ( carry_in ) begin 
 		  carry_write_en = 0;
 		  zero_write_en = 1;
@@ -87,7 +87,7 @@ module ALU_controller (ir, alu_operation_from_controller, carry_in, zero_in,
 		  reg_write_enable_out = 0;
 	      end
 		end
-	 else if ( r_type_opcode ==  NDZ ) begin
+	 else if ( r_type_opcode == NDZ && reg_write_enable_in) begin
 	     if ( zero_in ) begin 
 		  carry_write_en = 0;
 		  zero_write_en = 1;
@@ -101,13 +101,13 @@ module ALU_controller (ir, alu_operation_from_controller, carry_in, zero_in,
 		  reg_write_enable_out = 0;
 	      end
 		end		  
-	 else if ( r_type_opcode == ADD || r_type_opcode == ADL || ( ir[15:12] == ADI ) ) begin 
+	 else if ( (r_type_opcode == ADD || r_type_opcode == ADL || ( ir[15:12] == ADI )) && reg_write_enable_in ) begin 
 		 alu_operation_out = 2'b00;
 		 carry_write_en = 1;
 		 zero_write_en = 1;
 		 reg_write_enable_out = 1;
 		 end
-	 else if ( r_type_opcode == NDU ) begin 
+	 else if ( r_type_opcode == NDU && reg_write_enable_in ) begin 
 	     alu_operation_out = 2'b01;
 		 zero_write_en = 1;
 		 carry_write_en = 0;

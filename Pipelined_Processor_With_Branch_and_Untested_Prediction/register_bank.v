@@ -32,7 +32,7 @@ module register_bank(clk, reset, readAdd1, readAdd2, writeAdd, writeData, writeE
 	    for ( i = 0; i < 7 ; i = i+1 ) begin
 	     register_ram[i] = i;
         end
-		//register_ram[4] = 3; // for debugging purpose, change later
+		register_ram[4] = 3; // for debugging purpose, change later
 		register_ram[7] = 0; // pc starts @ loc 0
 	  end
       else begin
