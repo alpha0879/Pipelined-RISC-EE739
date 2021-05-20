@@ -75,6 +75,8 @@ module pipelined_processor ( clk, reset);
 	 reg [1:0] pc_control_from_ex = 2'b00; 
 	 reg [15:0] pc_next_from_ex;
 	 wire [1:0] pc_select;
+	 wire [15:0] ir_out_from_ex_nop_out;
+	 wire reg_wr_en_from_ex_nop_out, mem_wr_en_from_ex_nop_out;
 	 
  
  // ********************************************** signals for EX-MEM pipeline register ************************************************
@@ -92,7 +94,7 @@ module pipelined_processor ( clk, reset);
  // *********** LA SA LM SM related signals *****************
 	wire [15:0] addr_in_dm, address_base, mem_data_in_load_store_multi, data_in_dm;
 	wire [2:0] la_sa_index, lm_sm_index, address_offset, rd_addr_chosen_from_mem;
-	wire load_store_multi_freeze, reg_or_mem_en_load_store_multi;
+	wire load_store_multi_freeze, reg_or_mem_en_load_store_multi, nop_mux_select;
 	
 	reg mux_select_addr_in_mem, mux_select_index_in_mem, mux_sel_data_for_in_mem, mux_sel_dm_wr_en, mux_sel_reg_wr_en, mux_sel_rd_addr_in_mem;
  // ********************************************** signals for MEM-WB pipeline register ************************************************
@@ -108,7 +110,7 @@ module pipelined_processor ( clk, reset);
 	
 	// ******************************************** signals for hazard detection ********************************************************
 	reg [1:0] counter = 0;   
-	wire [4:0] hazard_signal;// = 5'b11111;
+	reg [4:0] hazard_signal = 5'b11111;
 	
 	// ******************************************** signals for branch prediction ********************************************************
 	
@@ -194,7 +196,7 @@ module pipelined_processor ( clk, reset);
 	 // register bank
 	 register_bank  register_file ( .clk(clk), .reset(reset), .readAdd1(A1_address), .readAdd2(A2_address), .writeAdd(rd_addr_at_wb)
 									,.writeData(rd_data_at_wb),.writeEnable(reg_wr_en_at_wb), .readData1(RF_D1), .readData2(RF_D2),
-									.readData_R6_to_R0(RF_D_R6_to_R0), .r7writeData(pc_current), .r7wrEnable(hazard_signal[4]) ); // hazard_signal[4] is pc enable
+									.readData_R6_to_R0(RF_D_R6_to_R0), .r7writeData(pc_current), .r7wrEnable(pc_enable) ); 
  	
 	// ************************************************** JAL @ ID STAGE ***********************************************************		
 	// JAL 
@@ -354,15 +356,19 @@ module pipelined_processor ( clk, reset);
 											.out(rf_d3_data_at_ex));
 	 
 	 
-	 
 	 // control_sig_out_from_id_ex[8] this selects between memory and alu 
-	 assign new_control_signals_at_ex = {reg_write_en_redefined, control_sig_out_from_id_ex[1] , control_sig_out_from_id_ex[0]};
+	 assign new_control_signals_at_ex = {reg_wr_en_from_ex_nop_out, control_sig_out_from_id_ex[1] , mem_wr_en_from_ex_nop_out};
+	 
+	 // NOP MUX for LM SM occuring in consecutive cycles
+	 assign ir_out_from_ex_nop_out = nop_mux_select ? 16'b0111000000000000 : ir_out_from_id_ex;
+	 assign reg_wr_en_from_ex_nop_out = nop_mux_select ? 1'b0 : reg_write_en_redefined;
+	 assign mem_wr_en_from_ex_nop_out = nop_mux_select ? 1'b0 : control_sig_out_from_id_ex[0];
 	 
 	// ***************************************************************** EX-MEM PIPELINE REG ********************************************************	
 	assign ex_mem_enable = hazard_signal[1] & load_store_multi_freeze;	
 	EX2MEM_Pipline_Reg ex_mem_pipe_reg ( .clk(clk), .rst(ex_mem_reg_reset), .enable(ex_mem_enable), .Control_In(new_control_signals_at_ex), 
 											.Rd_Addr_In_From_Ex(rf_d3_addr_at_ex), .Rd_Data_In_From_Ex(rf_d3_data_at_ex), .RF_D1_In(alu_src_A), .RF_D2_In(rf_d2_forwarded),
-											.ALU_Result_In(alu_out), .Instr_In(ir_out_from_id_ex), .Control_Out(control_out_from_ex_mem), 
+											.ALU_Result_In(alu_out), .Instr_In(ir_out_from_ex_nop_out), .Control_Out(control_out_from_ex_mem), 
 											.Rd_Addr_Out_PR(rd_addr_ex_mem), .Rd_Data_Out_PR(rd_data_ex_mem), .RF_D1_Out(start_address_lm_sm_la_sa), .RF_D2_Out(mem_data_in), 
 											.ALU_Result_Out(mem_addr), .Instr_Out(ir_out_from_ex_mem) );
 	 
@@ -377,7 +383,8 @@ module pipelined_processor ( clk, reset);
 		
 		Load_Store_Multi_Block la_sa_lm_sm_block (.clk(clk), .ir(ir_out_from_ex_mem), .rf_d2(mem_data_in), .reg_data_form_id_112(RF_D_R6_to_R0), 
 												 .reg_index_la_sa(la_sa_index), .reg_index_lm_sm(lm_sm_index), .freeze(load_store_multi_freeze), 
-												 .reg_or_mem_enable(reg_or_mem_en_load_store_multi), .mem_data_for_sa_sm(mem_data_in_load_store_multi));
+												 .reg_or_mem_enable(reg_or_mem_en_load_store_multi), .mem_data_for_sa_sm(mem_data_in_load_store_multi),
+												 .nop_mux_select(nop_mux_select));
 		
 		always @( * ) begin
 		    // generating control signals for various muxes inside memory stage as part of LA, SA, LM and SM instructions
@@ -475,7 +482,7 @@ module pipelined_processor ( clk, reset);
     // Hazard detection to check immediate load dependency - stalls for 1 clock. No other hazard handling needed since forwarding takes care of
 	// others
    
-    always @( posedge clk ) begin
+    /* always @( posedge clk ) begin
 	  counter = 0;
       if ((ir_out_from_id_ex[15:12] == 4'b0100) && ((A1_address == rf_d3_addr_at_ex ) || (A2_address == rf_d3_addr_at_ex ))) 
 	  begin
@@ -487,7 +494,34 @@ module pipelined_processor ( clk, reset);
 		end
 	  end
     end
-    assign hazard_signal = ( counter == 1) ? 5'b00011 : 5'b11111;
+    assign hazard_signal = ( counter == 1) ? 5'b00011 : 5'b11111; */
+	
+	always @( posedge clk ) begin
+	  counter = 0;
+      if ((ir_out_from_id_ex[15:12] == 4'b0100) && ((A1_address == rf_d3_addr_at_ex ) || (A2_address == rf_d3_addr_at_ex )) || (ir_out_from_id_ex[15:12] ==  4'b1110 ) || (ir_out_from_id_ex[15:12] ==  4'b1111 ) || (ir_out_from_id_ex[15:12] ==  4'b1100 ) || (ir_out_from_id_ex[15:12] ==  4'b1101 )) 
+	  begin
+	    counter <= counter + 1;		
+		if ( counter == 1 )  
+		begin 
+			//hazard_signal = 5'b11111;
+			counter = 0;
+		end
+	  end
+    end
+	
+	always @( * ) begin
+      if (counter == 1) begin
+		hazard_signal = 5'b11111;
+	  end
+	  else if ((ir_out_from_id_ex[15:12] == 4'b0100) && ((A1_address == rf_d3_addr_at_ex ) || (A2_address == rf_d3_addr_at_ex )) || (ir_out_from_id_ex[15:12] ==  4'b1110 ) || (ir_out_from_id_ex[15:12] ==  4'b1111 ) || (ir_out_from_id_ex[15:12] ==  4'b1100 ) || (ir_out_from_id_ex[15:12] ==  4'b1101 )) begin
+		hazard_signal = 5'b00011;
+	  end
+	  else begin
+		hazard_signal = 5'b11111;
+	  end
+	  
+    end
+    
 endmodule
 	 
 	 

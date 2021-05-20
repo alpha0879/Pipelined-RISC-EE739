@@ -69,11 +69,37 @@ module instruction_memory(clk, reset, readAdd, out);
 				instruction_mem[1]  <=		16'b0001001110010000; // ADD R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // R2 = 1 + 6 = 7 
 				instruction_mem[2] 	<= 		16'b0001010100101000; // ADD R5, R2, R4 ADD: 00_01 RA RB RC 0 00 // R0 = 10 
 				
-				instruction_mem[3] <=      16'b1110101000000000; // LA R5 */
+				instruction_mem[3] <=      16'b1110101000000000; // LA R5
 				
-				/* instruction_mem[4] <=      16'b0001000000001000;  // add r1, r0 r0    r1 = 42
-				instruction_mem[5] <=      16'b0001001000100000;  // add r4, r1, r0   r4 = 63
-				instruction_mem[6] <=      16'b0001001000100000;  // add r4, r1, r0   r4 = 63 */
+				instruction_mem[4] <=      16'b0001010011001000;  // add r1, r2, r3    r1 = 25
+				instruction_mem[5]  <=     16'b0100101101000001;// lw r5, r5,1 
+				instruction_mem[6] <=      16'b0001101000100000;  // add r4, r5, r0   r4 = 63
+				instruction_mem[7] <=      16'b1111011000000000; // SA R3  */
+				
+				/* Working version test cases
+				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
+				instruction_mem[1]  <=		16'b0001001110010000; // ADD R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // R2 = 1 + 6 = 7 
+				instruction_mem[2] 	<= 		16'b0001010100101000; // ADD R5, R2, R4 ADD: 00_01 RA RB RC 0 00 // R5 = 10 
+				
+				instruction_mem[3] <=      16'b1100101001010110; // LM R5 // R0 - 10 , R2 - 11, R4 - 12 , R5 - 13
+				
+				instruction_mem[4] <=      16'b0001010011001000;  // add r1, r2, r3    r1 = 14
+				instruction_mem[5]  <=     16'b0100110101000001;// lw r6, r5,1  r6 - 14
+				instruction_mem[6] <=      16'b0001110000100000;  // add r4, r6, r0   r4 = 24
+				instruction_mem[7] <=      16'b1101011001010110; // SM R3
+				 */
+				
+				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
+				instruction_mem[1]  <=		16'b0001001110010000; // ADD R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // R2 = 1 + 6 = 7 
+				instruction_mem[2] 	<= 		16'b0001010100101000; // ADD R5, R2, R4 ADD: 00_01 RA RB RC 0 00 // R5 = 10 
+				
+				instruction_mem[3] <=      16'b1110101000000000; // LA R5
+				
+				instruction_mem[4] <=      16'b0001010011001000;  // add r1, r2, r3    r1 = 25
+				instruction_mem[5]  <=     16'b0100110101000001;// lw r6, r5,1  r6 - 16
+				instruction_mem[6] <=      16'b0001110000100000;  // add r4, r6, r0   r4 = 26
+				instruction_mem[7] <=      16'b1111100000000000; // SA R4
+				instruction_mem[8]  <=     16'b0101010110000001;// sw R2, R6, 1   
 				
 				//For checking SA
 				/* instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
@@ -98,11 +124,11 @@ module instruction_memory(clk, reset, readAdd, out);
 				instruction_mem[6] <=      16'b0001001000100000;  // add r4, r1, r0   r4 = 63
 				 */
 				//For checking SM
-				instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
+				/* instruction_mem[0]  <=		16'b0001000000000000; // ADD R0, R0, R0 ADD: 00_01 RA RB RC 0 00				//RC, RA, RB
 				instruction_mem[1]  <=		16'b0001001110010000; // ADD R2, R1, R6 ADD: 00_01 RA RB RC 0 00 // R2 = 1 + 6 = 7 
 				instruction_mem[2] 	<= 		16'b0001010100000000; // ADD R0, R2, R4 ADD: 00_01 RA RB RC 0 00 // R0 = 10 , 2nd iteration r0 = 18+3 = 21
 				
-				instruction_mem[3] <=      16'b1101000001010110; // SM R0
+				instruction_mem[3] <=      16'b1101000001010110; // SM R0 */
 				
 				/* instruction_mem[4] <=      16'b0001000000001000;  // add r1, r0 r0    r1 = 42
 				instruction_mem[5] <=      16'b0001001000100000;  // add r4, r1, r0   r4 = 63

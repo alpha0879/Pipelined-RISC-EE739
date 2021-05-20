@@ -1,7 +1,7 @@
-module Load_Store_Multi_Block(clk, ir, rf_d2, reg_data_form_id_112, reg_index_la_sa, reg_index_lm_sm, freeze, reg_or_mem_enable, mem_data_for_sa_sm);
+module Load_Store_Multi_Block(clk, ir, rf_d2, reg_data_form_id_112, reg_index_la_sa, reg_index_lm_sm, freeze, reg_or_mem_enable, mem_data_for_sa_sm, nop_mux_select);
 
 	output reg [2:0] reg_index_la_sa, reg_index_lm_sm;
-	output reg freeze, reg_or_mem_enable;
+	output reg freeze, reg_or_mem_enable, nop_mux_select;
 	output reg [15:0] mem_data_for_sa_sm;
 	input  [111:0] reg_data_form_id_112;
 	input  [15:0] ir, rf_d2;
@@ -21,6 +21,7 @@ module Load_Store_Multi_Block(clk, ir, rf_d2, reg_data_form_id_112, reg_index_la
 	 freeze = 1'b1;
 	 reg_or_mem_enable = 1'b0;
 	 mem_data_for_sa_sm = 15'd0;
+	 nop_mux_select = 1'b0;
     end
     
 	always @(*) begin 
@@ -56,6 +57,13 @@ module Load_Store_Multi_Block(clk, ir, rf_d2, reg_data_form_id_112, reg_index_la
 		end
 					
 	end
+	
+	always @(*) begin 
+		if (((ir[15:12] == LA ) || (ir[15:12] == SA ) || (ir[15:12] == LM ) || (ir[15:12] == SM )))
+			nop_mux_select = 1'b1;
+		else
+			nop_mux_select = 1'b0;		
+	end
 
 	always @(posedge clk ) begin 
 	  imm = ir[6:0];
@@ -67,7 +75,7 @@ module Load_Store_Multi_Block(clk, ir, rf_d2, reg_data_form_id_112, reg_index_la
 	    reg_index_la_sa = reg_index_la_sa + 1;
 	  end
 	  else if ( (ir[15:12] == LM ) || (ir[15:12] == SM )) begin
-			if ( imm[5 - reg_index_la_sa] == 1'b1) begin
+			if ( imm[6 - reg_index_la_sa] == 1'b1) begin
 				reg_index_lm_sm = reg_index_lm_sm + 1;
 			end	
 	    reg_index_la_sa = reg_index_la_sa + 1;
