@@ -334,7 +334,7 @@ module pipelined_processor ( clk, reset);
 									.select(rs2_frwd_control), .out(rf_d2_forwarded));
 	 
 	 // alu srcb select
-	  assign imm16 = { {10{1'b0}}, ir_out_from_id_ex[5:0]};
+	  assign imm16 = { {10{ir_out_from_id_ex[5]}}, ir_out_from_id_ex[5:0]};
 	  assign rf_d2_shift_left_1 = rf_d2_forwarded << 1;
 	  mux_16_bit_4_input alu_srcb_mux (.ip0(rf_d2_forwarded), .ip1(imm16), .ip2(rf_d2_shift_left_1), .ip3(16'd0), 
 									.select(control_sig_out_from_id_ex[6:5]), .out(alu_src_B));	 
