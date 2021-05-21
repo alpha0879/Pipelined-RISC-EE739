@@ -6,7 +6,7 @@ module data_memory(clk,reset,accessAddress, writeData, writeEnable, dataOut);
 	input  [15:0] accessAddress, writeData;
 	input  writeEnable, clk, reset;
 	
-	reg [15:0] ram_data_memory [0:4095];  // for the time being let's take complete memory, change later!
+	reg [15:0] ram_data_memory [0:4095]; 
 	integer i;
 	
 	initial begin 
