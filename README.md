@@ -1,4 +1,7 @@
 # Pipelined-RISC-EE739
 
-# To - Do
+Nikhil Ajith
 
+Robin James
+
+EE IITB
