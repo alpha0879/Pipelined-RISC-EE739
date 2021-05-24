@@ -1,7 +1,6 @@
-# Pipelined-RISC-EE739
+## Pipelined-RISC-EE739
 
-Nikhil Ajith
-
-Robin James
-
+By \
+Nikhil Ajith \
+Robin James \
 EE IITB
